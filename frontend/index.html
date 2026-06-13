@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CIFAR-10 Image Classifier</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 40px; }
+    .box { max-width: 500px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 12px; }
+    img { max-width: 250px; margin: 20px; }
+    button { padding: 10px 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>CIFAR-10 Image Classifier</h1>
+    <p>Upload an image to predict its class</p>
+
+    <input type="file" id="imageInput" accept="image/*">
+    <br>
+    <img id="preview" style="display:none;">
+    <br>
+    <button onclick="predictImage()">Predict</button>
+
+    <h2 id="result"></h2>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+
+    imageInput.onchange = () => {
+      const file = imageInput.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+      }
+    };
+
+    async function predictImage() {
+      const file = imageInput.files[0];
+      if (!file) {
+        alert("Please select an image first");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        document.getElementById("result").innerText =
+        `Error: ${data.detail}`;
+        return;
+      }
+
+      document.getElementById("result").innerText =
+      `Prediction: ${data.prediction} | Confidence: ${data.confidence}`;
+    }
+  </script>
+</body>
+</html>
